@@ -87,3 +87,43 @@ def dist_calc(tr, ts):
 				continue
 			x += val**2
 		return math.sqrt(x)
+
+def predict_one(test, x_train, y_train, k):
+	pass
+
+
+
+
+def validate_k():
+	x_tr  = read_train_data()
+	x_train = x_tr['combined']
+	y_train = x_tr.views.to_list()
+	k_to_validate = [1, 3, 5, 9]
+	validate_cut = len(x_train)//10 + 1
+	x_validate, x_train = validate_data_build(x_train)
+	y_validate = y_train[:validate_cut]
+	y_train = y_train[validate_cut:]
+	best_acc, best_k = 0, 0
+	for k in k_to_validate:
+		y_pred = [predict_one(x_train[i], x_validate, y_validate, k) for i in range(len(x_train))]
+		print('validation for k:', k)
+		acc = acc_calc(y_pred, y_train)['acc']
+		best_acc, best_k = (acc, k) if acc >= best_acc else (best_acc, best_k)
+	print("-- best k:", best_k, "best acc:", best_acc, "--")
+	return best_k
+
+
+
+
+
+def train_test(k):
+	pass
+
+
+
+
+
+if __name__ == "__main__":
+	best_k = validate_k()
+	print("validation is over and now the best k (", best_k, ") will be used on testset.")
+	train_test(best_k)
