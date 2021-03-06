@@ -46,6 +46,25 @@ def tf_idf(df, voc, idf=None, mode='train'):
     df_des = pd.Series(counts_des, index=words_des).to_dict()
     df_com = pd.Series(counts_com, index=words_com).to_dict()
 
+    if (mode == 'train'):
+        # calculate idf vector
+        N = df.shape[0]
+        idf = {}
+        for term in df_com.keys():
+            idf[term] = np.log(N) - np.log(
+                df_com[term] + 0.000001)  # calculate idf based on combined 'title'+'description'.
+
+        idf = csc.csc_matrix(list(idf.values()))  # convert idf values to sparse matrix
+
+    # calculate tfidf vectors
+    tfidf_tit_csc = idf.multiply(vec_fit_tit)
+    tfidf_des_csc = idf.multiply(vec_fit_des)
+    tfidf_com_csc = idf.multiply(vec_fit_com)
+    for index, row in df.iterrows():
+        df.at[index, 'title'] = tfidf_tit_csc[index]
+        df.at[index, 'description'] = tfidf_des_csc[index]
+        df.at[index, 'combined'] = tfidf_com_csc[index]
+
     return (df, idf)
 
 
