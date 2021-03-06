@@ -89,9 +89,8 @@ def dist_calc(tr, ts):
 		return math.sqrt(x)
 
 def predict_one(test, x_train, y_train, k):
-	pass
-
-
+	srt_pr = sorted([(tr, dist_calc(test, x_train[tr])) for tr in range(len(x_train))], key=lambda x:x[1])
+	return 1 if sum(y_train[srt_pr[i][0]] for i in range(k)) > 0 else -1
 
 
 def validate_k():
@@ -117,7 +116,9 @@ def validate_k():
 
 
 def train_test(k):
-	pass
+	x_train, y_train, x_test, y_test = build_train_test_data()
+	y_pred = [predict_one(x_test[i], x_train, y_train, k) for i in range(len(x_test))]
+	acc_calc(y_pred, y_test)
 
 
 
