@@ -121,7 +121,9 @@ def train_test(k):
 	acc_calc(y_pred, y_test)
 
 
-
+def classify_new_set(new_df, k):
+	x_train, y_train, x_test, y_test = build_train_test_data(new_df)
+	return [predict_one(x_test[i], x_train, y_train, k) for i in range(len(x_test))]
 
 
 if __name__ == "__main__":
