@@ -23,6 +23,9 @@ def random_forest(mode="combined"):
     df_test = read_test_data(path_src)
     df_test[mode] = df_test[mode].apply(lambda x: sparce_matrix_to_list(x))
     arr_test = []
+    for item in df_test[mode]:
+        for elem in item:
+            arr_test.append(elem)
 
     arr = np.array(arr_test)
     x_test = np.reshape(arr, (len(df_test[mode]), len(df_test[mode][0])))
