@@ -26,7 +26,6 @@ def sparce_matrix_to_list(sparce_matrix):
     return csc.csc_matrix.toarray(sparce_matrix).flatten()
 
 
-
 # number of each word appeared in each category / number of whole words in data set
 def log_Pxy(grouped_vec, number_whole_words):
     return np.subtract(np.log(grouped_vec), np.log(number_whole_words))
@@ -87,7 +86,6 @@ def predict(df_test, logPxy_logPy_com, logPxy_logPy_des, logPxy_logPy_tit):
     return df_test
 
 
-
 def accuracyCalc(y_pred, y_gold):
     num_correct = 0
     for i in range(len(y_gold)):
@@ -130,3 +128,47 @@ def bayesClassifier(pathSrc, laplace_smoothing):
     print('\n\tACCURACY BASE ON DESCRIPTION= : {}'.format(accuracyCalc(y_pred['des prediction'], y_pred['views'])))
     print(
         '\n\tACCURACY BASE ON TITLE+DESCRIPTION= : {}'.format(accuracyCalc(y_pred['com prediction'], y_pred['views'])))
+
+
+def bayesClassifier_hyper_par(laplace_smoothing_lower=0.2, laplace_smoothing_upper=2, step=0.1):
+    # path to read data from
+    pathSrc = str(pathlib.Path().absolute())
+
+    # read train data here
+    df_train, vocabulary = read_train_data(pathSrc)
+    print('read data.')
+    # read test data here
+    df_test = read_test_data(pathSrc)
+    print('read test data\n')
+
+    laplace_accuracy = []
+
+    start = int(round(tm.time() * 1000))
+    laplace = laplace_smoothing_lower
+    number_of_parameter_checking = int(np.floor((laplace_smoothing_upper - laplace_smoothing_lower) / step)) + 1
+    process = 0
+    while laplace < laplace_smoothing_upper:
+        process += 1
+        print('process {} out of {}'.format(process, number_of_parameter_checking))
+        print("ACCURACY BASE ON LAPLACE= {}:\n\t".format(laplace))
+        bayesClassifier(pathSrc, laplace)
+        laplace += step
+
+        print('------------------------')
+
+    end = int(round(tm.time() * 1000))
+
+    print('Hyper Parameter Laplace END.\n time of Computing is:\n\t{} ms'.format(end - start))
+    print('arguments: (laplace_smoothing_lower = {}, laplace_smoothing_upper= {}, step = {})'.format(
+        laplace_smoothing_lower, laplace_smoothing_upper, step))
+    print('\n(laplace, its accuracy on data):\n########################################')
+    for tuples in laplace_accuracy:
+        print("\t\t", tuples)
+
+
+def main():
+    path = str(pathlib.Path().absolute())
+    #    bayesClassifier(path)
+    bayesClassifier_hyper_par()
+
+# main()
