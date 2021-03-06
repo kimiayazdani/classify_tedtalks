@@ -100,3 +100,55 @@ def count_vectorizer(df):
     term_freq['Total Frequency'] = term_freq['Description Frequency'] + term_freq['Title Frequency']
 
     return term_freq.sort_values(by=['Total Frequency'], ascending=False)
+
+    ######################preprocess#############################
+def preprocess(df, create_stop_words = True):
+    df = case_folding(df)
+    df = contraction(df)
+    df = tokenize(df)
+    ##delete nltk stop words before stemming and lemmatization
+    hard_stop_words = stopwords.words('english')
+    df = delete_stops(df, hard_stop_words)
+    wordnet_lemmatizer = WordNetLemmatizer()
+    df = lemmatize(df, wordnet_lemmatizer)
+    df = remove_punc(df)
+    stemmer = PorterStemmer(PorterStemmer.ORIGINAL_ALGORITHM)
+    df = stemm(df, stemmer)
+    global soft_stop_words
+    if(create_stop_words):
+        term_freq = count_vectorizer(df)
+        stop_df = term_freq.head(20) ##number of most frequent stop words to filter
+        soft_stop_words = stop_df.index.tolist()
+    df = delete_stops(df, soft_stop_words)
+    return df
+
+
+######################end preprocess function#################
+
+######################save unique vocabulary##################
+def save_voc(df, path):
+    term_freq = count_vectorizer(df)
+    voc = term_freq.index.to_numpy()
+    np.save(path+"\\voc", voc)
+#####################end save unique vocabulary###############
+
+
+database_path = str(pathlib.Path().absolute())
+df_train = pd.read_csv(database_path+"/train.csv")
+df_test = pd.read_csv(database_path+"/test.csv")
+df_train = df_train[['title', 'description', 'views']]
+df_test = df_test[['title', 'description', 'views']]
+
+soft_stop_words = []
+df_train = preprocess(df_train, create_stop_words = True)
+df_test = preprocess(df_test, create_stop_words = False)
+
+save_voc(df_train, database_path)
+
+df_train['description'] = df_train['description'].apply(lambda x: ' '.join(i for i in x))
+df_train['title'] = df_train['title'].apply(lambda x: ' '.join(i for i in x))
+df_test['description'] = df_test['description'].apply(lambda x: ' '.join(i for i in x))
+df_test['title'] = df_test['title'].apply(lambda x: ' '.join(i for i in x))
+
+df_train.to_csv(database_path+"/train_preprocessed.csv", index=False)
+df_test.to_csv(database_path+"/test_preprocessed.csv", index=False)
